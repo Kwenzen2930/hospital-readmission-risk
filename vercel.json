@@ -1,8 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/**/*.py": {
-      "excludeFiles": "{data/**,training/**,notebooks/**,reports/**,sql/**,**/__pycache__/**}"
+    "api/index.py": {
+      "includeFiles": "models/**",
+      "excludeFiles": "{.next/**,node_modules/**,src/**,public/**,training/**,reports/**,notebooks/**,sql/**,data/**,.git/**,.vscode/**}",
+      "maxDuration": 30
     }
   }
 }
