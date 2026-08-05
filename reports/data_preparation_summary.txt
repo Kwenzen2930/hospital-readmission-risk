@@ -1,0 +1,17 @@
+HOSPITAL READMISSION DATA PREPARATION
+=============================================
+Cleaned rows: 99,340
+Cleaned columns: 48
+
+Train rows: 79,473
+Test rows: 19,867
+
+Train unique patients: 56,036
+Test unique patients: 13,951
+Patients shared across sets: 0
+
+Train 30-day readmission rate: 11.39%
+Test 30-day readmission rate: 11.39%
+
+Numeric features: 10
+Categorical features: 35

@@ -1,0 +1,92 @@
+HOSPITAL READMISSION DATA AUDIT
+========================================
+Rows: 101,766
+Columns: 48
+Duplicate rows: 0
+
+TARGET COUNTS
+readmitted
+NO     54864
+>30    35545
+<30    11357
+
+TARGET PERCENTAGES
+readmitted
+NO     53.91
+>30    34.93
+<30    11.16
+
+DATA TYPE COUNTS
+str      37
+int64    11
+
+TOP 15 COLUMNS BY MISSINGNESS
+                   missing_count  missing_percent  unique_values data_type
+weight                     98569            96.86              9       str
+max_glu_serum              96420            94.75              3       str
+a1cresult                  84748            83.28              3       str
+medical_specialty          49949            49.08             72       str
+payer_code                 40256            39.56             17       str
+race                        2273             2.23              5       str
+diag_3                      1423             1.40            789       str
+diag_2                       358             0.35            748       str
+diag_1                        21             0.02            716       str
+tolbutamide                    0             0.00              2       str
+pioglitazone                   0             0.00              4       str
+rosiglitazone                  0             0.00              4       str
+acarbose                       0             0.00              4       str
+miglitol                       0             0.00              4       str
+troglitazone                   0             0.00              2       str
+
+CONSTANT COLUMNS
+examide, citoglipton
+
+COLUMN NAMES
+race
+gender
+age
+weight
+admission_type_id
+discharge_disposition_id
+admission_source_id
+time_in_hospital
+payer_code
+medical_specialty
+num_lab_procedures
+num_procedures
+num_medications
+number_outpatient
+number_emergency
+number_inpatient
+diag_1
+diag_2
+diag_3
+number_diagnoses
+max_glu_serum
+a1cresult
+metformin
+repaglinide
+nateglinide
+chlorpropamide
+glimepiride
+acetohexamide
+glipizide
+glyburide
+tolbutamide
+pioglitazone
+rosiglitazone
+acarbose
+miglitol
+troglitazone
+tolazamide
+examide
+citoglipton
+insulin
+glyburide_metformin
+glipizide_metformin
+glimepiride_pioglitazone
+metformin_rosiglitazone
+metformin_pioglitazone
+change
+diabetesmed
+readmitted

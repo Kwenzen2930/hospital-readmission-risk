@@ -1,0 +1,13 @@
+HOSPITAL READMISSION MODEL COMPARISON
+==================================================
+
+                 model  decision_threshold  test_precision  test_recall  test_f1_score  test_roc_auc  test_average_precision  test_false_positive  test_false_negative
+hist_gradient_boosting              0.3852          0.1485       0.7402         0.2474        0.6578                  0.2169                 9602                  588
+   logistic_regression              0.3837          0.1388       0.8356         0.2381        0.6600                  0.2169                11731                  372
+
+Selected model: hist_gradient_boosting
+Selected threshold: 0.3852
+
+Model selection used validation average precision.
+The decision threshold was tuned using validation F2.
+The test set was not used for threshold selection.

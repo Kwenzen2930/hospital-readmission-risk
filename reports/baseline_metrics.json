@@ -1,0 +1,17 @@
+{
+  "test_rows": 19867,
+  "actual_positive_cases": 2263,
+  "predicted_positive_cases": 7026,
+  "accuracy": 0.6591835707454573,
+  "balanced_accuracy": 0.614372569585328,
+  "precision": 0.17919157415314546,
+  "recall": 0.5563411400795404,
+  "specificity": 0.6724039990911157,
+  "f1_score": 0.2710733125201852,
+  "roc_auc": 0.6600273277786162,
+  "average_precision": 0.21689446709903962,
+  "true_negative": 11837,
+  "false_positive": 5767,
+  "false_negative": 1004,
+  "true_positive": 1259
+}

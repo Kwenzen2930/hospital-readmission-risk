@@ -1,0 +1,63 @@
+BASELINE LOGISTIC REGRESSION
+========================================
+Accuracy: 0.6592
+Balanced accuracy: 0.6144
+Precision: 0.1792
+Recall: 0.5563
+Specificity: 0.6724
+F1 score: 0.2711
+ROC-AUC: 0.6600
+Average precision: 0.2169
+
+CONFUSION MATRIX VALUES
+True negatives: 11,837
+False positives: 5,767
+False negatives: 1,004
+True positives: 1,259
+
+CLASSIFICATION REPORT
+                       precision    recall  f1-score   support
+
+No 30-day readmission     0.9218    0.6724    0.7776     17604
+   30-day readmission     0.1792    0.5563    0.2711      2263
+
+             accuracy                         0.6592     19867
+            macro avg     0.5505    0.6144    0.5243     19867
+         weighted avg     0.8372    0.6592    0.7199     19867
+
+
+TOP POSITIVE RISK SIGNALS
+                                                feature  coefficient
+               categorical__discharge_disposition_id_15     1.505490
+              categorical__medical_specialty_Hematology     1.291634
+               categorical__discharge_disposition_id_28     1.258795
+                categorical__discharge_disposition_id_9     1.122540
+               categorical__discharge_disposition_id_22     0.958256
+                            categorical__tolbutamide_No     0.858733
+     categorical__medical_specialty_Hematology/Oncology     0.848119
+               categorical__medical_specialty_Radiology     0.799206
+      categorical__medical_specialty_InfectiousDiseases     0.700656
+         categorical__medical_specialty_Surgery-Plastic     0.645827
+                categorical__discharge_disposition_id_5     0.612842
+                categorical__medical_specialty_Oncology     0.581255
+                     categorical__admission_source_id_8     0.581012
+categorical__medical_specialty_Anesthesiology-Pediatric     0.577351
+              categorical__medical_specialty_Nephrology     0.549267
+
+TOP NEGATIVE RISK SIGNALS
+                                                feature  coefficient
+categorical__medical_specialty_Pediatrics-Endocrinology    -2.262521
+              categorical__medical_specialty_Gynecology    -1.772788
+               categorical__discharge_disposition_id_17    -1.635170
+          categorical__medical_specialty_Otolaryngology    -1.562894
+                       categorical__admission_type_id_7    -1.445233
+    categorical__admission_source_id_infrequent_sklearn    -1.200712
+                        categorical__tolbutamide_Steady    -1.186833
+              categorical__medical_specialty_Obstetrics    -1.086701
+               categorical__discharge_disposition_id_23    -1.081607
+         categorical__chlorpropamide_infrequent_sklearn    -0.864878
+    categorical__glipizide_metformin_infrequent_sklearn    -0.853770
+ categorical__medical_specialty_Pediatrics-CriticalCare    -0.767440
+               categorical__discharge_disposition_id_24    -0.737744
+                            categorical__nateglinide_Up    -0.682999
+               categorical__medical_specialty_Pathology    -0.659263
