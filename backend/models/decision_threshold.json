@@ -1,0 +1,6 @@
+{
+  "model": "hist_gradient_boosting",
+  "threshold": 0.3852255379835115,
+  "selection_metric": "validation_average_precision",
+  "threshold_metric": "validation_f2"
+}
