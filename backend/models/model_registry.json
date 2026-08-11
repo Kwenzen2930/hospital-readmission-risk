@@ -1,0 +1,31 @@
+{
+  "registry_version": 1,
+  "active_model_version": "hgb-e144fb0e6e40",
+  "generated_at": "2026-08-10T09:11:03.233409+00:00",
+  "models": [
+    {
+      "version": "hgb-e144fb0e6e40",
+      "status": "active",
+      "model_name": "hist_gradient_boosting",
+      "artifact": "best_readmission_model.joblib",
+      "artifact_sha256": "e144fb0e6e40eca5de1a23e875a0590a0a527c00b3490822f1b96198bbec44ff",
+      "artifact_size_bytes": 1279250,
+      "model_class": "Pipeline",
+      "model_module": "sklearn.pipeline",
+      "scikit_learn_version": "1.9.0",
+      "decision_threshold": 0.3852255379835115,
+      "selection_metric": "validation_average_precision",
+      "threshold_metric": "validation_f2",
+      "feature_count": 45,
+      "evaluation": {
+        "test_encounters": 19867,
+        "roc_auc": 0.6577648563983822,
+        "average_precision": 0.21692653984246696,
+        "precision": 0.1485324111022435,
+        "recall": 0.7401679186920017,
+        "f1": 0.24741506646971936,
+        "specificity": 0.45455578277664166
+      }
+    }
+  ]
+}

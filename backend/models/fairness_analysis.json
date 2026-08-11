@@ -1,0 +1,419 @@
+{
+  "analysis_scope": "held_out_subgroup_analysis",
+  "model": "hist_gradient_boosting",
+  "decision_threshold": 0.3852255379835115,
+  "test_encounters": 19867,
+  "minimum_group_size": 200,
+  "minimum_positive_outcomes": 20,
+  "minimum_negative_outcomes": 20,
+  "overall": {
+    "encounters": 19867,
+    "actual_readmissions": 2263,
+    "actual_non_readmissions": 17604,
+    "support_status": "sufficient",
+    "observed_readmission_rate": 0.1139074847737454,
+    "average_predicted_risk": 0.41935505353991614,
+    "flagged_rate": 0.5676247042834852,
+    "recall": 0.7401679186920017,
+    "precision": 0.1485324111022435,
+    "specificity": 0.45455578277664166,
+    "false_positive_rate": 0.5454442172233583,
+    "false_negative_rate": 0.25983208130799823,
+    "confusion_matrix": {
+      "true_positive": 1675,
+      "false_positive": 9602,
+      "false_negative": 588,
+      "true_negative": 8002
+    }
+  },
+  "subgroups": {
+    "gender": [
+      {
+        "group": "Female",
+        "encounters": 10531,
+        "actual_readmissions": 1207,
+        "actual_non_readmissions": 9324,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.11461399677143672,
+        "average_predicted_risk": 0.41865861222661005,
+        "flagged_rate": 0.5746842655018517,
+        "recall": 0.7448218724109362,
+        "precision": 0.14854593522802378,
+        "specificity": 0.44734019734019737,
+        "false_positive_rate": 0.5526598026598026,
+        "false_negative_rate": 0.2551781275890638,
+        "confusion_matrix": {
+          "true_positive": 899,
+          "false_positive": 5153,
+          "false_negative": 308,
+          "true_negative": 4171
+        }
+      },
+      {
+        "group": "Male",
+        "encounters": 9336,
+        "actual_readmissions": 1056,
+        "actual_non_readmissions": 8280,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.11311053984575835,
+        "average_predicted_risk": 0.42014063874454605,
+        "flagged_rate": 0.5596615252784919,
+        "recall": 0.7348484848484849,
+        "precision": 0.14851674641148324,
+        "specificity": 0.46268115942028987,
+        "false_positive_rate": 0.5373188405797101,
+        "false_negative_rate": 0.26515151515151514,
+        "confusion_matrix": {
+          "true_positive": 776,
+          "false_positive": 4449,
+          "false_negative": 280,
+          "true_negative": 3831
+        }
+      }
+    ],
+    "race": [
+      {
+        "group": "Caucasian",
+        "encounters": 14826,
+        "actual_readmissions": 1731,
+        "actual_non_readmissions": 13095,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.11675435046539863,
+        "average_predicted_risk": 0.42237859511040066,
+        "flagged_rate": 0.5770268447322272,
+        "recall": 0.7440785673021375,
+        "precision": 0.1505552308591467,
+        "specificity": 0.4450553646429935,
+        "false_positive_rate": 0.5549446353570064,
+        "false_negative_rate": 0.2559214326978625,
+        "confusion_matrix": {
+          "true_positive": 1288,
+          "false_positive": 7267,
+          "false_negative": 443,
+          "true_negative": 5828
+        }
+      },
+      {
+        "group": "AfricanAmerican",
+        "encounters": 3758,
+        "actual_readmissions": 407,
+        "actual_non_readmissions": 3351,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.10830228845130388,
+        "average_predicted_risk": 0.42224333180093465,
+        "flagged_rate": 0.5662586482171368,
+        "recall": 0.7371007371007371,
+        "precision": 0.14097744360902256,
+        "specificity": 0.4544911966577141,
+        "false_positive_rate": 0.5455088033422859,
+        "false_negative_rate": 0.2628992628992629,
+        "confusion_matrix": {
+          "true_positive": 300,
+          "false_positive": 1828,
+          "false_negative": 107,
+          "true_negative": 1523
+        }
+      },
+      {
+        "group": "Unknown",
+        "encounters": 463,
+        "actual_readmissions": 37,
+        "actual_non_readmissions": 426,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.07991360691144708,
+        "average_predicted_risk": 0.36291214440662006,
+        "flagged_rate": 0.4427645788336933,
+        "recall": 0.7027027027027027,
+        "precision": 0.12682926829268293,
+        "specificity": 0.57981220657277,
+        "false_positive_rate": 0.42018779342723006,
+        "false_negative_rate": 0.2972972972972973,
+        "confusion_matrix": {
+          "true_positive": 26,
+          "false_positive": 179,
+          "false_negative": 11,
+          "true_negative": 247
+        }
+      },
+      {
+        "group": "Hispanic",
+        "encounters": 378,
+        "actual_readmissions": 43,
+        "actual_non_readmissions": 335,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.11375661375661375,
+        "average_predicted_risk": 0.3947386527440422,
+        "flagged_rate": 0.5238095238095238,
+        "recall": 0.7674418604651163,
+        "precision": 0.16666666666666666,
+        "specificity": 0.5074626865671642,
+        "false_positive_rate": 0.4925373134328358,
+        "false_negative_rate": 0.23255813953488372,
+        "confusion_matrix": {
+          "true_positive": 33,
+          "false_positive": 165,
+          "false_negative": 10,
+          "true_negative": 170
+        }
+      },
+      {
+        "group": "Other",
+        "encounters": 328,
+        "actual_readmissions": 34,
+        "actual_non_readmissions": 294,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.10365853658536585,
+        "average_predicted_risk": 0.380347806972833,
+        "flagged_rate": 0.4420731707317073,
+        "recall": 0.6470588235294118,
+        "precision": 0.15172413793103448,
+        "specificity": 0.5816326530612245,
+        "false_positive_rate": 0.41836734693877553,
+        "false_negative_rate": 0.35294117647058826,
+        "confusion_matrix": {
+          "true_positive": 22,
+          "false_positive": 123,
+          "false_negative": 12,
+          "true_negative": 171
+        }
+      },
+      {
+        "group": "Asian",
+        "encounters": 114,
+        "actual_readmissions": 11,
+        "actual_non_readmissions": 103,
+        "support_status": "limited_support",
+        "observed_readmission_rate": 0.09649122807017543,
+        "average_predicted_risk": 0.35401528401927657,
+        "flagged_rate": 0.40350877192982454,
+        "recall": 0.5454545454545454,
+        "precision": 0.13043478260869565,
+        "specificity": 0.6116504854368932,
+        "false_positive_rate": 0.3883495145631068,
+        "false_negative_rate": 0.45454545454545453,
+        "confusion_matrix": {
+          "true_positive": 6,
+          "false_positive": 40,
+          "false_negative": 5,
+          "true_negative": 63
+        }
+      }
+    ],
+    "age": [
+      {
+        "group": "[70-80)",
+        "encounters": 5011,
+        "actual_readmissions": 604,
+        "actual_non_readmissions": 4407,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.1205348233885452,
+        "average_predicted_risk": 0.4443107410244052,
+        "flagged_rate": 0.6401915785272401,
+        "recall": 0.7731788079470199,
+        "precision": 0.14557356608478803,
+        "specificity": 0.37803494440662583,
+        "false_positive_rate": 0.6219650555933742,
+        "false_negative_rate": 0.22682119205298013,
+        "confusion_matrix": {
+          "true_positive": 467,
+          "false_positive": 2741,
+          "false_negative": 137,
+          "true_negative": 1666
+        }
+      },
+      {
+        "group": "[60-70)",
+        "encounters": 4505,
+        "actual_readmissions": 506,
+        "actual_non_readmissions": 3999,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.1123196448390677,
+        "average_predicted_risk": 0.4240625114376987,
+        "flagged_rate": 0.581354051054384,
+        "recall": 0.7509881422924901,
+        "precision": 0.14509354715540282,
+        "specificity": 0.4401100275068767,
+        "false_positive_rate": 0.5598899724931233,
+        "false_negative_rate": 0.2490118577075099,
+        "confusion_matrix": {
+          "true_positive": 380,
+          "false_positive": 2239,
+          "false_negative": 126,
+          "true_negative": 1760
+        }
+      },
+      {
+        "group": "[50-60)",
+        "encounters": 3426,
+        "actual_readmissions": 378,
+        "actual_non_readmissions": 3048,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.11033274956217162,
+        "average_predicted_risk": 0.3653308232787181,
+        "flagged_rate": 0.4013426736719206,
+        "recall": 0.6164021164021164,
+        "precision": 0.16945454545454544,
+        "specificity": 0.6253280839895013,
+        "false_positive_rate": 0.3746719160104987,
+        "false_negative_rate": 0.3835978835978836,
+        "confusion_matrix": {
+          "true_positive": 233,
+          "false_positive": 1142,
+          "false_negative": 145,
+          "true_negative": 1906
+        }
+      },
+      {
+        "group": "[80-90)",
+        "encounters": 3263,
+        "actual_readmissions": 407,
+        "actual_non_readmissions": 2856,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.12473184186331597,
+        "average_predicted_risk": 0.45962931126774,
+        "flagged_rate": 0.7060986821942997,
+        "recall": 0.8206388206388207,
+        "precision": 0.1449652777777778,
+        "specificity": 0.31022408963585435,
+        "false_positive_rate": 0.6897759103641457,
+        "false_negative_rate": 0.17936117936117937,
+        "confusion_matrix": {
+          "true_positive": 334,
+          "false_positive": 1970,
+          "false_negative": 73,
+          "true_negative": 886
+        }
+      },
+      {
+        "group": "[40-50)",
+        "encounters": 1903,
+        "actual_readmissions": 155,
+        "actual_non_readmissions": 1748,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.0814503415659485,
+        "average_predicted_risk": 0.397952614048074,
+        "flagged_rate": 0.48239621650026276,
+        "recall": 0.7032258064516129,
+        "precision": 0.1187363834422658,
+        "specificity": 0.5371853546910755,
+        "false_positive_rate": 0.46281464530892447,
+        "false_negative_rate": 0.2967741935483871,
+        "confusion_matrix": {
+          "true_positive": 109,
+          "false_positive": 809,
+          "false_negative": 46,
+          "true_negative": 939
+        }
+      },
+      {
+        "group": "[30-40)",
+        "encounters": 753,
+        "actual_readmissions": 93,
+        "actual_non_readmissions": 660,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.12350597609561753,
+        "average_predicted_risk": 0.3883243606410926,
+        "flagged_rate": 0.4262948207171315,
+        "recall": 0.6989247311827957,
+        "precision": 0.20249221183800623,
+        "specificity": 0.6121212121212121,
+        "false_positive_rate": 0.3878787878787879,
+        "false_negative_rate": 0.3010752688172043,
+        "confusion_matrix": {
+          "true_positive": 65,
+          "false_positive": 256,
+          "false_negative": 28,
+          "true_negative": 404
+        }
+      },
+      {
+        "group": "[90-100)",
+        "encounters": 545,
+        "actual_readmissions": 84,
+        "actual_non_readmissions": 461,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.15412844036697249,
+        "average_predicted_risk": 0.431947757145666,
+        "flagged_rate": 0.673394495412844,
+        "recall": 0.7261904761904762,
+        "precision": 0.16621253405994552,
+        "specificity": 0.3362255965292842,
+        "false_positive_rate": 0.6637744034707158,
+        "false_negative_rate": 0.27380952380952384,
+        "confusion_matrix": {
+          "true_positive": 61,
+          "false_positive": 306,
+          "false_negative": 23,
+          "true_negative": 155
+        }
+      },
+      {
+        "group": "[20-30)",
+        "encounters": 312,
+        "actual_readmissions": 29,
+        "actual_non_readmissions": 283,
+        "support_status": "sufficient",
+        "observed_readmission_rate": 0.09294871794871795,
+        "average_predicted_risk": 0.40078809951223465,
+        "flagged_rate": 0.4519230769230769,
+        "recall": 0.7931034482758621,
+        "precision": 0.16312056737588654,
+        "specificity": 0.5830388692579506,
+        "false_positive_rate": 0.4169611307420495,
+        "false_negative_rate": 0.20689655172413793,
+        "confusion_matrix": {
+          "true_positive": 23,
+          "false_positive": 118,
+          "false_negative": 6,
+          "true_negative": 165
+        }
+      },
+      {
+        "group": "[10-20)",
+        "encounters": 114,
+        "actual_readmissions": 7,
+        "actual_non_readmissions": 107,
+        "support_status": "limited_support",
+        "observed_readmission_rate": 0.06140350877192982,
+        "average_predicted_risk": 0.2582404056621173,
+        "flagged_rate": 0.21052631578947367,
+        "recall": 0.42857142857142855,
+        "precision": 0.125,
+        "specificity": 0.8037383177570093,
+        "false_positive_rate": 0.19626168224299065,
+        "false_negative_rate": 0.5714285714285714,
+        "confusion_matrix": {
+          "true_positive": 3,
+          "false_positive": 21,
+          "false_negative": 4,
+          "true_negative": 86
+        }
+      },
+      {
+        "group": "[0-10)",
+        "encounters": 35,
+        "actual_readmissions": 0,
+        "actual_non_readmissions": 35,
+        "support_status": "limited_support",
+        "observed_readmission_rate": 0.0,
+        "average_predicted_risk": 0.09946797496994478,
+        "flagged_rate": 0.0,
+        "recall": null,
+        "precision": null,
+        "specificity": 1.0,
+        "false_positive_rate": 0.0,
+        "false_negative_rate": null,
+        "confusion_matrix": {
+          "true_positive": 0,
+          "false_positive": 0,
+          "false_negative": 0,
+          "true_negative": 35
+        }
+      }
+    ]
+  },
+  "interpretation_note": "Descriptive held-out subgroup analysis only. Differences do not by themselves establish bias, fairness, causality, or clinical equity.",
+  "support_note": "Groups with fewer than 200 encounters or fewer than 20 positive or negative outcomes are marked limited_support.",
+  "model_version": "hgb-e144fb0e6e40",
+  "model_artifact_sha256": "e144fb0e6e40eca5de1a23e875a0590a0a527c00b3490822f1b96198bbec44ff"
+}

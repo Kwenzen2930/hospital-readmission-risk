@@ -1,0 +1,110 @@
+{
+  "analysis_scope": "held_out_probability_calibration",
+  "model": "hist_gradient_boosting",
+  "model_version": "hgb-e144fb0e6e40",
+  "model_artifact_sha256": "e144fb0e6e40eca5de1a23e875a0590a0a527c00b3490822f1b96198bbec44ff",
+  "test_encounters": 19867,
+  "actual_readmissions": 2263,
+  "observed_readmission_rate": 0.1139074847737454,
+  "average_predicted_risk": 0.41935505353991614,
+  "mean_probability_gap": 0.30544756876617074,
+  "brier_score": 0.20182714083319567,
+  "log_loss": 0.5886003403958869,
+  "expected_calibration_error": 0.3054475687661707,
+  "maximum_calibration_error": 0.4494704052555563,
+  "binning_method": "10 approximately equal-sized probability quantile bins",
+  "reliability_bins": [
+    {
+      "bin": 1,
+      "encounters": 1987,
+      "minimum_predicted_risk": 0.008072285888583707,
+      "maximum_predicted_risk": 0.20697014445901538,
+      "average_predicted_risk": 0.1431165789586254,
+      "observed_readmission_rate": 0.043281328636134875,
+      "absolute_calibration_gap": 0.09983525032249052
+    },
+    {
+      "bin": 2,
+      "encounters": 1987,
+      "minimum_predicted_risk": 0.20704308808338395,
+      "maximum_predicted_risk": 0.2757433095443587,
+      "average_predicted_risk": 0.2436590970843232,
+      "observed_readmission_rate": 0.06542526421741318,
+      "absolute_calibration_gap": 0.17823383286691002
+    },
+    {
+      "bin": 3,
+      "encounters": 1986,
+      "minimum_predicted_risk": 0.27575077758433253,
+      "maximum_predicted_risk": 0.3263731580419678,
+      "average_predicted_risk": 0.3019784813657044,
+      "observed_readmission_rate": 0.07099697885196375,
+      "absolute_calibration_gap": 0.2309815025137406
+    },
+    {
+      "bin": 4,
+      "encounters": 1987,
+      "minimum_predicted_risk": 0.32643289427680255,
+      "maximum_predicted_risk": 0.3712794392435763,
+      "average_predicted_risk": 0.3489402253086616,
+      "observed_readmission_rate": 0.08907901358832411,
+      "absolute_calibration_gap": 0.2598612117203375
+    },
+    {
+      "bin": 5,
+      "encounters": 1987,
+      "minimum_predicted_risk": 0.371285241006133,
+      "maximum_predicted_risk": 0.4144246941377709,
+      "average_predicted_risk": 0.3929794420815321,
+      "observed_readmission_rate": 0.08303975842979366,
+      "absolute_calibration_gap": 0.30993968365173846
+    },
+    {
+      "bin": 6,
+      "encounters": 1986,
+      "minimum_predicted_risk": 0.41443581888122644,
+      "maximum_predicted_risk": 0.4593456796038385,
+      "average_predicted_risk": 0.43601080677064624,
+      "observed_readmission_rate": 0.09718026183282981,
+      "absolute_calibration_gap": 0.33883054493781645
+    },
+    {
+      "bin": 7,
+      "encounters": 1987,
+      "minimum_predicted_risk": 0.4593941150157207,
+      "maximum_predicted_risk": 0.5071805780227123,
+      "average_predicted_risk": 0.48272699954971326,
+      "observed_readmission_rate": 0.1253145445395068,
+      "absolute_calibration_gap": 0.35741245501020646
+    },
+    {
+      "bin": 8,
+      "encounters": 1986,
+      "minimum_predicted_risk": 0.5071919950472557,
+      "maximum_predicted_risk": 0.5625173986658745,
+      "average_predicted_risk": 0.5337575789206235,
+      "observed_readmission_rate": 0.1379657603222558,
+      "absolute_calibration_gap": 0.39579181859836765
+    },
+    {
+      "bin": 9,
+      "encounters": 1987,
+      "minimum_predicted_risk": 0.5625204889123657,
+      "maximum_predicted_risk": 0.6380808048062234,
+      "average_predicted_risk": 0.5987134775805929,
+      "observed_readmission_rate": 0.1645697030699547,
+      "absolute_calibration_gap": 0.43414377451063824
+    },
+    {
+      "bin": 10,
+      "encounters": 1987,
+      "minimum_predicted_risk": 0.638081936960318,
+      "maximum_predicted_risk": 0.9436240621203085,
+      "average_predicted_risk": 0.7116747333884199,
+      "observed_readmission_rate": 0.2622043281328636,
+      "absolute_calibration_gap": 0.4494704052555563
+    }
+  ],
+  "interpretation_note": "This analysis evaluates whether raw model scores align with observed event rates. The model score should not be interpreted as a calibrated clinical probability.",
+  "metric_note": "Lower Brier score and smaller calibration gaps indicate better probability alignment. Calibration results describe this held-out cohort only."
+}

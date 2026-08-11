@@ -68,3 +68,4 @@ data/processed/
 
 # VS Code local settings
 .vscode/
+backend/data/*.db

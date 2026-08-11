@@ -1,0 +1,190 @@
+{
+  "test_encounters": 19867,
+  "actual_readmissions": 2263,
+  "actual_readmission_rate": 0.1139074847737454,
+  "average_predicted_risk": 0.41935505353991614,
+  "flagged_count": 11277,
+  "flagged_rate": 0.5676247042834852,
+  "risk_distribution": {
+    "low": 1841,
+    "moderate": 6749,
+    "elevated": 8358,
+    "high": 2919
+  },
+  "age_groups": [
+    {
+      "age": "[0-10)",
+      "encounters": 35,
+      "average_risk": 0.09946797496994476,
+      "actual_readmission": 0.0
+    },
+    {
+      "age": "[10-20)",
+      "encounters": 114,
+      "average_risk": 0.2582404056621173,
+      "actual_readmission": 0.06140350877192982
+    },
+    {
+      "age": "[20-30)",
+      "encounters": 312,
+      "average_risk": 0.40078809951223465,
+      "actual_readmission": 0.09294871794871795
+    },
+    {
+      "age": "[30-40)",
+      "encounters": 753,
+      "average_risk": 0.3883243606410926,
+      "actual_readmission": 0.12350597609561753
+    },
+    {
+      "age": "[40-50)",
+      "encounters": 1903,
+      "average_risk": 0.39795261404807397,
+      "actual_readmission": 0.0814503415659485
+    },
+    {
+      "age": "[50-60)",
+      "encounters": 3426,
+      "average_risk": 0.3653308232787181,
+      "actual_readmission": 0.11033274956217162
+    },
+    {
+      "age": "[60-70)",
+      "encounters": 4505,
+      "average_risk": 0.42406251143769874,
+      "actual_readmission": 0.1123196448390677
+    },
+    {
+      "age": "[70-80)",
+      "encounters": 5011,
+      "average_risk": 0.4443107410244052,
+      "actual_readmission": 0.1205348233885452
+    },
+    {
+      "age": "[80-90)",
+      "encounters": 3263,
+      "average_risk": 0.45962931126774004,
+      "actual_readmission": 0.12473184186331597
+    },
+    {
+      "age": "[90-100)",
+      "encounters": 545,
+      "average_risk": 0.431947757145666,
+      "actual_readmission": 0.15412844036697249
+    }
+  ],
+  "admission_types": [
+    {
+      "admission_type_id": 1,
+      "encounters": 10628,
+      "average_risk": 0.441198163080439
+    },
+    {
+      "admission_type_id": 3,
+      "encounters": 3649,
+      "average_risk": 0.3740958743516075
+    },
+    {
+      "admission_type_id": 2,
+      "encounters": 3632,
+      "average_risk": 0.4147943424653096
+    },
+    {
+      "admission_type_id": 6,
+      "encounters": 1012,
+      "average_risk": 0.3913651780287556
+    },
+    {
+      "admission_type_id": 5,
+      "encounters": 864,
+      "average_risk": 0.4016863486588862
+    },
+    {
+      "admission_type_id": 8,
+      "encounters": 78,
+      "average_risk": 0.3346848063990281
+    },
+    {
+      "admission_type_id": 4,
+      "encounters": 2,
+      "average_risk": 0.4059374739970053
+    },
+    {
+      "admission_type_id": 7,
+      "encounters": 2,
+      "average_risk": 0.31400943104507706
+    }
+  ],
+  "length_of_stay": [
+    {
+      "days": 1,
+      "encounters": 2791,
+      "average_risk": 0.3438165739679598
+    },
+    {
+      "days": 2,
+      "encounters": 3417,
+      "average_risk": 0.3956858071969097
+    },
+    {
+      "days": 3,
+      "encounters": 3428,
+      "average_risk": 0.40941587512856137
+    },
+    {
+      "days": 4,
+      "encounters": 2775,
+      "average_risk": 0.43194130248781704
+    },
+    {
+      "days": 5,
+      "encounters": 1920,
+      "average_risk": 0.4461822830833286
+    },
+    {
+      "days": 6,
+      "encounters": 1454,
+      "average_risk": 0.4644573446605888
+    },
+    {
+      "days": 7,
+      "encounters": 1142,
+      "average_risk": 0.47118881593711515
+    },
+    {
+      "days": 8,
+      "encounters": 856,
+      "average_risk": 0.48644380691011246
+    },
+    {
+      "days": 9,
+      "encounters": 544,
+      "average_risk": 0.4859306684832725
+    },
+    {
+      "days": 10,
+      "encounters": 479,
+      "average_risk": 0.48568492728973395
+    },
+    {
+      "days": 11,
+      "encounters": 380,
+      "average_risk": 0.38689495409951785
+    },
+    {
+      "days": 12,
+      "encounters": 245,
+      "average_risk": 0.4235083624666035
+    },
+    {
+      "days": 13,
+      "encounters": 235,
+      "average_risk": 0.4171438133500621
+    },
+    {
+      "days": 14,
+      "encounters": 201,
+      "average_risk": 0.4242754860641091
+    }
+  ]
+}

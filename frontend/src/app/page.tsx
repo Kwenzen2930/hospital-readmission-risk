@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import type { FormEvent } from "react";
+import ThresholdSimulator from "../components/ThresholdSimulator";
+import AuditActivity from "../components/AuditActivity";
+import ModelMonitoring from "../components/ModelMonitoring";
+import ModelRegistry from "../components/ModelRegistry";
+import SubgroupAnalysis from "../components/SubgroupAnalysis";
+import CalibrationAnalysis from "../components/CalibrationAnalysis";
+
+import { useEffect, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 
 type FormState = {
   age: string;
@@ -25,14 +32,105 @@ type FormState = {
   diabetesMedication: string;
 };
 
+type ExplanationItem = {
+  feature: string;
+  value: string;
+  direction: "increases_risk" | "decreases_risk";
+  impact: number;
+};
+
 type PredictionResult = {
   model: string;
   risk_score: number;
   decision_threshold: number;
   flagged_for_follow_up: boolean;
   risk_band: string;
+  decision_margin: number;
+  threshold_distance: number;
+  threshold_proximity: string;
   supplied_feature_count: number;
+  explanations: ExplanationItem[];
   disclaimer: string;
+};
+
+type BatchPredictionItem = {
+  row_number: number;
+  risk_score: number;
+  risk_band: string;
+  flagged_for_follow_up: boolean;
+};
+
+type BatchPredictionResponse = {
+  total_rows: number;
+  flagged_rows: number;
+  average_risk: number;
+  low_count: number;
+  moderate_count: number;
+  elevated_count: number;
+  high_count: number;
+  predictions: BatchPredictionItem[];
+};
+
+type DashboardAnalytics = {
+  test_encounters: number;
+  actual_readmissions: number;
+  actual_readmission_rate: number;
+  average_predicted_risk: number;
+  flagged_count: number;
+  flagged_rate: number;
+  risk_distribution: {
+    low: number;
+    moderate: number;
+    elevated: number;
+    high: number;
+  };
+  age_groups: {
+    age: string;
+    encounters: number;
+    average_risk: number;
+    actual_readmission: number;
+  }[];
+  admission_types: {
+    admission_type_id: number;
+    encounters: number;
+    average_risk: number;
+  }[];
+  length_of_stay: {
+    days: number;
+    encounters: number;
+    average_risk: number;
+  }[];
+};
+
+type ModelPerformance = {
+  model: string;
+  test_encounters: number;
+  decision_threshold: number;
+  positive_rate: number;
+  predicted_positive_rate: number;
+  metrics: {
+    roc_auc: number;
+    average_precision: number;
+    precision: number;
+    recall: number;
+    f1: number;
+    specificity: number;
+    accuracy: number;
+  };
+  confusion_matrix: {
+    true_negative: number;
+    false_positive: number;
+    false_negative: number;
+    true_positive: number;
+  };
+  roc_curve: {
+    x: number;
+    y: number;
+  }[];
+  precision_recall_curve: {
+    x: number;
+    y: number;
+  }[];
 };
 
 type SelectOption = {
@@ -162,11 +260,885 @@ function NumberField({
   );
 }
 
+function parseCsvLine(line: string) {
+  const cells: string[] = [];
+  let current = "";
+  let quoted = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (quoted && line[index + 1] === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (character === "," && !quoted) {
+      cells.push(current.trim());
+      current = "";
+    } else {
+      current += character;
+    }
+  }
+
+  cells.push(current.trim());
+
+  return cells;
+}
+
+function parseCsv(text: string) {
+  const lines = text
+    .replace(/\r/g, "")
+    .split("\n")
+    .filter((line) => line.trim().length > 0);
+
+  if (lines.length < 2) {
+    throw new Error(
+      "CSV must contain a header row and at least one patient row.",
+    );
+  }
+
+  const headers = parseCsvLine(lines[0]).map(
+    (header, index) =>
+      index === 0
+        ? header.replace(/^\uFEFF/, "").trim()
+        : header.trim(),
+  );
+
+  if (headers.some((header) => !header)) {
+    throw new Error("CSV contains an empty column name.");
+  }
+
+  return lines.slice(1).map((line) => {
+    const values = parseCsvLine(line);
+
+    const row: Record<string, string> = {};
+
+    headers.forEach((header, index) => {
+      row[header] = values[index] ?? "";
+    });
+
+    return row;
+  });
+}
+
+function downloadTextFile(
+  filename: string,
+  content: string,
+  type = "text/csv;charset=utf-8",
+) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  URL.revokeObjectURL(url);
+}
+
+function downloadBatchTemplate() {
+  const headers = [
+    "age",
+    "gender",
+    "race",
+    "admission_type_id",
+    "discharge_disposition_id",
+    "admission_source_id",
+    "time_in_hospital",
+    "num_lab_procedures",
+    "num_procedures",
+    "num_medications",
+    "number_outpatient",
+    "number_emergency",
+    "number_inpatient",
+    "number_diagnoses",
+    "a1_cresult",
+    "max_glu_serum",
+    "insulin",
+    "change",
+    "diabetes_med",
+  ];
+
+  const example = [
+    "[70-80)",
+    "Female",
+    "Caucasian",
+    "1",
+    "1",
+    "7",
+    "8",
+    "55",
+    "1",
+    "24",
+    "1",
+    "2",
+    "3",
+    "9",
+    ">8",
+    ">200",
+    "Steady",
+    "Ch",
+    "Yes",
+  ];
+
+  downloadTextFile(
+    "readmission_batch_template.csv",
+    `${headers.join(",")}\n${example.join(",")}\n`,
+  );
+}
+
+function downloadBatchResults(
+  result: BatchPredictionResponse,
+) {
+  const headers = [
+    "row_number",
+    "risk_score",
+    "risk_percentage",
+    "risk_band",
+    "flagged_for_follow_up",
+  ];
+
+  const rows = result.predictions.map((prediction) =>
+    [
+      prediction.row_number,
+      prediction.risk_score,
+      (prediction.risk_score * 100).toFixed(1),
+      prediction.risk_band,
+      prediction.flagged_for_follow_up,
+    ].join(","),
+  );
+
+  downloadTextFile(
+    "readmission_batch_predictions.csv",
+    [headers.join(","), ...rows].join("\n") + "\n",
+  );
+}
+
+function getThresholdProximityLabel(
+  proximity: string,
+) {
+  switch (proximity) {
+    case "near":
+      return "Near threshold";
+    case "moderate":
+      return "Moderately far";
+    default:
+      return "Far from threshold";
+  }
+}
+
+function getThresholdProximityClass(
+  proximity: string,
+) {
+  switch (proximity) {
+    case "near":
+      return "rounded-full bg-amber-500/15 px-3 py-1 text-xs font-semibold text-amber-300";
+    case "moderate":
+      return "rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300";
+    default:
+      return "rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-300";
+  }
+}
+
+function getRiskBandLabel(band: string) {
+  switch (band) {
+    case "high":
+      return "High risk";
+    case "elevated":
+      return "Elevated risk";
+    case "moderate":
+      return "Moderate risk";
+    default:
+      return "Low risk";
+  }
+}
+
+function getRiskBandBadgeClass(band: string) {
+  switch (band) {
+    case "high":
+      return "rounded-full bg-red-500/15 px-3 py-1 text-sm font-semibold text-red-300";
+    case "elevated":
+      return "rounded-full bg-amber-500/15 px-3 py-1 text-sm font-semibold text-amber-300";
+    case "moderate":
+      return "rounded-full bg-sky-500/15 px-3 py-1 text-sm font-semibold text-sky-300";
+    default:
+      return "rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-semibold text-emerald-300";
+  }
+}
+
+function getRiskBarClass(band: string) {
+  switch (band) {
+    case "high":
+      return "h-full rounded-full bg-red-500 transition-all";
+    case "elevated":
+      return "h-full rounded-full bg-amber-400 transition-all";
+    case "moderate":
+      return "h-full rounded-full bg-sky-400 transition-all";
+    default:
+      return "h-full rounded-full bg-emerald-400 transition-all";
+  }
+}
+
+function getWorkflowGuidance(band: string) {
+  switch (band) {
+    case "high":
+      return {
+        title: "Priority review pathway",
+        summary:
+          "This score is above the high-risk presentation band.",
+        steps: [
+          "Review recent inpatient and emergency utilization",
+          "Review discharge and follow-up planning",
+          "Review medication burden and recent changes",
+          "Prioritize post-discharge follow-up workflow",
+        ],
+      };
+
+    case "elevated":
+      return {
+        title: "Enhanced review pathway",
+        summary:
+          "This score is above the model decision threshold.",
+        steps: [
+          "Review previous hospital utilization",
+          "Review discharge planning",
+          "Check medication and diagnosis complexity",
+          "Consider additional follow-up workflow",
+        ],
+      };
+
+    case "moderate":
+      return {
+        title: "Routine review pathway",
+        summary:
+          "This score is below the model threshold but above the low-risk band.",
+        steps: [
+          "Review encounter history",
+          "Check recent healthcare utilization",
+          "Continue standard follow-up workflow",
+        ],
+      };
+
+    default:
+      return {
+        title: "Standard follow-up pathway",
+        summary:
+          "This score falls within the low-risk presentation band.",
+        steps: [
+          "Continue standard discharge workflow",
+          "Maintain routine follow-up",
+        ],
+      };
+  }
+}
+
+function getPatientTimeline(form: FormState) {
+  const timeline: {
+    title: string;
+    detail: string;
+    current?: boolean;
+  }[] = [];
+
+  if (form.outpatientVisits > 0) {
+    timeline.push({
+      title: "Prior outpatient care",
+      detail: `${form.outpatientVisits} recorded ${
+        form.outpatientVisits === 1 ? "visit" : "visits"
+      }`,
+    });
+  }
+
+  if (form.emergencyVisits > 0) {
+    timeline.push({
+      title: "Prior emergency care",
+      detail: `${form.emergencyVisits} recorded ${
+        form.emergencyVisits === 1 ? "visit" : "visits"
+      }`,
+    });
+  }
+
+  if (form.inpatientVisits > 0) {
+    timeline.push({
+      title: "Prior inpatient admissions",
+      detail: `${form.inpatientVisits} recorded ${
+        form.inpatientVisits === 1 ? "admission" : "admissions"
+      }`,
+    });
+  }
+
+  if (
+    form.outpatientVisits === 0 &&
+    form.emergencyVisits === 0 &&
+    form.inpatientVisits === 0
+  ) {
+    timeline.push({
+      title: "No prior utilization recorded",
+      detail: "No previous outpatient, emergency, or inpatient visits entered",
+    });
+  }
+
+  const admissionLabel =
+    admissionTypes.find(
+      (option) => option.value === form.admissionType,
+    )?.label ?? "Hospital admission";
+
+  timeline.push({
+    title: "Current encounter",
+    detail: `${admissionLabel} · ${form.timeInHospital} ${
+      form.timeInHospital === 1 ? "day" : "days"
+    } in hospital`,
+    current: true,
+  });
+
+  return timeline;
+}
+
+function AnalyticsBarRow({
+  label,
+  value,
+  maxValue,
+  displayValue,
+}: {
+  label: string;
+  value: number;
+  maxValue: number;
+  displayValue: string;
+}) {
+  const width =
+    maxValue > 0
+      ? Math.max(2, Math.min(100, (value / maxValue) * 100))
+      : 0;
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between gap-4 text-sm">
+        <span className="text-slate-400">{label}</span>
+        <span className="font-medium text-white">
+          {displayValue}
+        </span>
+      </div>
+
+      <div className="h-2.5 overflow-hidden rounded-full bg-slate-800">
+        <div
+          className="h-full rounded-full bg-blue-500"
+          style={{ width: `${width}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ComparisonBarRow({
+  label,
+  predicted,
+  actual,
+}: {
+  label: string;
+  predicted: number;
+  actual: number;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-sm font-medium text-slate-200">
+          {label}
+        </p>
+
+        <p className="text-xs text-slate-500">
+          Pred {(predicted * 100).toFixed(1)}%
+          {" · "}
+          Actual {(actual * 100).toFixed(1)}%
+        </p>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <div>
+          <div className="mb-1 text-[11px] uppercase tracking-wider text-blue-300">
+            Predicted risk
+          </div>
+
+          <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+            <div
+              className="h-full rounded-full bg-blue-500"
+              style={{
+                width: `${Math.min(
+                  predicted * 100,
+                  100,
+                )}%`,
+              }}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-1 text-[11px] uppercase tracking-wider text-emerald-300">
+            Actual readmission
+          </div>
+
+          <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+            <div
+              className="h-full rounded-full bg-emerald-500"
+              style={{
+                width: `${Math.min(
+                  actual * 100,
+                  100,
+                )}%`,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PerformanceCurveChart({
+  title,
+  subtitle,
+  points,
+  metricLabel,
+  metricValue,
+  diagonal = false,
+  baselineY,
+}: {
+  title: string;
+  subtitle: string;
+  points: {
+    x: number;
+    y: number;
+  }[];
+  metricLabel: string;
+  metricValue: string;
+  diagonal?: boolean;
+  baselineY?: number;
+}) {
+  const width = 560;
+  const height = 340;
+  const paddingLeft = 52;
+  const paddingRight = 24;
+  const paddingTop = 28;
+  const paddingBottom = 48;
+
+  const chartWidth =
+    width - paddingLeft - paddingRight;
+
+  const chartHeight =
+    height - paddingTop - paddingBottom;
+
+  const coordinates = points
+    .map((point) => {
+      const x =
+        paddingLeft + point.x * chartWidth;
+
+      const y =
+        paddingTop +
+        (1 - point.y) * chartHeight;
+
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .join(" ");
+
+  const ticks = [0, 0.25, 0.5, 0.75, 1];
+
+  return (
+    <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+      <div className="flex items-start justify-between gap-5">
+        <div>
+          <h3 className="text-lg font-semibold text-white">
+            {title}
+          </h3>
+
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            {subtitle}
+          </p>
+        </div>
+
+        <div className="shrink-0 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-right">
+          <p className="text-xs text-slate-500">
+            {metricLabel}
+          </p>
+
+          <p className="mt-1 text-lg font-bold text-white">
+            {metricValue}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-6 overflow-x-auto">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="min-w-[520px] w-full"
+          role="img"
+          aria-label={title}
+        >
+          {ticks.map((tick) => {
+            const x =
+              paddingLeft + tick * chartWidth;
+
+            const y =
+              paddingTop +
+              (1 - tick) * chartHeight;
+
+            return (
+              <g key={tick}>
+                <line
+                  x1={paddingLeft}
+                  x2={width - paddingRight}
+                  y1={y}
+                  y2={y}
+                  className="stroke-slate-800"
+                  strokeWidth="1"
+                />
+
+                <line
+                  x1={x}
+                  x2={x}
+                  y1={paddingTop}
+                  y2={height - paddingBottom}
+                  className="stroke-slate-800"
+                  strokeWidth="1"
+                />
+
+                <text
+                  x={paddingLeft - 12}
+                  y={y + 4}
+                  textAnchor="end"
+                  className="fill-slate-500 text-[10px]"
+                >
+                  {(tick * 100).toFixed(0)}%
+                </text>
+
+                <text
+                  x={x}
+                  y={height - paddingBottom + 22}
+                  textAnchor="middle"
+                  className="fill-slate-500 text-[10px]"
+                >
+                  {(tick * 100).toFixed(0)}%
+                </text>
+              </g>
+            );
+          })}
+
+          {diagonal && (
+            <line
+              x1={paddingLeft}
+              y1={height - paddingBottom}
+              x2={width - paddingRight}
+              y2={paddingTop}
+              className="stroke-slate-600"
+              strokeWidth="1.5"
+              strokeDasharray="7 7"
+            />
+          )}
+
+          {baselineY !== undefined && (
+            <line
+              x1={paddingLeft}
+              x2={width - paddingRight}
+              y1={
+                paddingTop +
+                (1 - baselineY) * chartHeight
+              }
+              y2={
+                paddingTop +
+                (1 - baselineY) * chartHeight
+              }
+              className="stroke-slate-600"
+              strokeWidth="1.5"
+              strokeDasharray="7 7"
+            />
+          )}
+
+          <polyline
+            points={coordinates}
+            fill="none"
+            className="stroke-blue-500"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          <line
+            x1={paddingLeft}
+            x2={width - paddingRight}
+            y1={height - paddingBottom}
+            y2={height - paddingBottom}
+            className="stroke-slate-600"
+            strokeWidth="1.5"
+          />
+
+          <line
+            x1={paddingLeft}
+            x2={paddingLeft}
+            y1={paddingTop}
+            y2={height - paddingBottom}
+            className="stroke-slate-600"
+            strokeWidth="1.5"
+          />
+
+          <text
+            x={paddingLeft + chartWidth / 2}
+            y={height - 8}
+            textAnchor="middle"
+            className="fill-slate-400 text-[11px]"
+          >
+            {diagonal
+              ? "False positive rate"
+              : "Recall"}
+          </text>
+
+          <text
+            x="14"
+            y={paddingTop + chartHeight / 2}
+            textAnchor="middle"
+            transform={`rotate(-90 14 ${
+              paddingTop + chartHeight / 2
+            })`}
+            className="fill-slate-400 text-[11px]"
+          >
+            {diagonal
+              ? "True positive rate"
+              : "Precision"}
+          </text>
+        </svg>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+        <span className="h-0.5 w-5 bg-blue-500" />
+        <span>Model</span>
+
+        <span className="ml-4 h-0 w-5 border-t border-dashed border-slate-500" />
+        <span>
+          {diagonal
+            ? "Random baseline"
+            : "Positive-rate baseline"}
+        </span>
+      </div>
+    </article>
+  );
+}
+
 export default function Home() {
   const [form, setForm] = useState<FormState>(initialForm);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [batchResult, setBatchResult] =
+    useState<BatchPredictionResponse | null>(null);
+  const [batchLoading, setBatchLoading] = useState(false);
+  const [batchError, setBatchError] = useState("");
+  const [batchFileName, setBatchFileName] = useState("");
+  const [analytics, setAnalytics] =
+    useState<DashboardAnalytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] =
+    useState(true);
+  const [analyticsError, setAnalyticsError] =
+    useState("");
+  const [performance, setPerformance] =
+    useState<ModelPerformance | null>(null);
+  const [performanceLoading, setPerformanceLoading] =
+    useState(true);
+  const [performanceError, setPerformanceError] =
+    useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAnalytics() {
+      try {
+        const apiBase =
+          process.env.NEXT_PUBLIC_API_URL
+            ?.trim()
+            .replace(/\/$/, "") ?? "";
+
+        const response = await fetch(
+          `${apiBase}/api/analytics`,
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Analytics API returned ${response.status}.`,
+          );
+        }
+
+        const data =
+          (await response.json()) as DashboardAnalytics;
+
+        if (!cancelled) {
+          setAnalytics(data);
+          setAnalyticsError("");
+        }
+      } catch (requestError) {
+        if (!cancelled) {
+          setAnalyticsError(
+            requestError instanceof Error
+              ? requestError.message
+              : "Unable to load analytics.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setAnalyticsLoading(false);
+        }
+      }
+    }
+
+    void loadAnalytics();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPerformance() {
+      try {
+        const apiBase =
+          process.env.NEXT_PUBLIC_API_URL
+            ?.trim()
+            .replace(/\/$/, "") ?? "";
+
+        const response = await fetch(
+          `${apiBase}/api/performance`,
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Performance API returned ${response.status}.`,
+          );
+        }
+
+        const data =
+          (await response.json()) as ModelPerformance;
+
+        if (!cancelled) {
+          setPerformance(data);
+          setPerformanceError("");
+        }
+      } catch (requestError) {
+        if (!cancelled) {
+          setPerformanceError(
+            requestError instanceof Error
+              ? requestError.message
+              : "Unable to load model performance.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setPerformanceLoading(false);
+        }
+      }
+    }
+
+    void loadPerformance();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleBatchFile(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setBatchLoading(true);
+    setBatchError("");
+    setBatchResult(null);
+    setBatchFileName(file.name);
+
+    try {
+      const parsedRows = parseCsv(await file.text());
+
+      if (parsedRows.length > 1000) {
+        throw new Error(
+          "CSV contains more than 1,000 rows. Split it into smaller batches.",
+        );
+      }
+
+      const rows = parsedRows.map((row) => {
+        const prepared: Record<string, string | number> = {
+          ...row,
+        };
+
+        const outpatient = Number(
+          row.number_outpatient || 0,
+        );
+        const emergency = Number(
+          row.number_emergency || 0,
+        );
+        const inpatient = Number(
+          row.number_inpatient || 0,
+        );
+
+        const utilization =
+          outpatient + emergency + inpatient;
+
+        if (!("service_utilization" in row)) {
+          prepared.service_utilization = utilization;
+        }
+
+        if (!("had_prior_utilization" in row)) {
+          prepared.had_prior_utilization =
+            utilization > 0 ? 1 : 0;
+        }
+
+        return prepared;
+      });
+
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_URL
+          ?.trim()
+          .replace(/\/$/, "") ?? "";
+
+      const response = await fetch(
+        `${apiBase}/api/predict/batch`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ rows }),
+        },
+      );
+
+      if (!response.ok) {
+        const message = await response.text();
+
+        throw new Error(
+          message || "Batch prediction request failed.",
+        );
+      }
+
+      const result =
+        (await response.json()) as BatchPredictionResponse;
+
+      setBatchResult(result);
+    } catch (requestError) {
+      setBatchError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to process CSV batch.",
+      );
+    } finally {
+      setBatchLoading(false);
+      event.target.value = "";
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -554,6 +1526,74 @@ export default function Home() {
               />
             </div>
 
+            <div className="mt-8 border-t border-slate-800 pt-7">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+                  Patient history
+                </p>
+
+                <h3 className="mt-2 text-lg font-semibold text-white">
+                  Encounter timeline
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  Timeline generated from the utilization information entered
+                  above. No patient identifiers are stored.
+                </p>
+              </div>
+
+              <div className="mt-6">
+                {getPatientTimeline(form).map(
+                  (item, index, timeline) => (
+                    <div
+                      key={`${item.title}-${index}`}
+                      className="relative flex gap-4 pb-6 last:pb-0"
+                    >
+                      <div className="relative flex w-8 shrink-0 justify-center">
+                        {index < timeline.length - 1 && (
+                          <div className="absolute bottom-0 top-7 w-px bg-slate-700" />
+                        )}
+
+                        <div
+                          className={
+                            item.current
+                              ? "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-xs font-semibold text-blue-300"
+                              : "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-xs font-semibold text-slate-400"
+                          }
+                        >
+                          {index + 1}
+                        </div>
+                      </div>
+
+                      <div
+                        className={
+                          item.current
+                            ? "flex-1 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4"
+                            : "flex-1 rounded-xl border border-slate-800 bg-slate-950/50 p-4"
+                        }
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="text-sm font-semibold text-slate-200">
+                            {item.title}
+                          </p>
+
+                          {item.current && (
+                            <span className="rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-300">
+                              Current
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                          {item.detail}
+                        </p>
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+
             {error && (
               <div className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
                 {error}
@@ -588,26 +1628,16 @@ export default function Home() {
                     </div>
 
                     <span
-                      className={
-                        result.flagged_for_follow_up
-                          ? "rounded-full bg-amber-500/15 px-3 py-1 text-sm font-semibold text-amber-300"
-                          : "rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-semibold text-emerald-300"
-                      }
+                      className={getRiskBandBadgeClass(result.risk_band)}
                     >
-                      {result.flagged_for_follow_up
-                        ? "Follow-up flagged"
-                        : "Below threshold"}
+                      {getRiskBandLabel(result.risk_band)}
                     </span>
                   </div>
 
                   <div className="mt-7">
                     <div className="h-3 overflow-hidden rounded-full bg-slate-800">
                       <div
-                        className={
-                          result.flagged_for_follow_up
-                            ? "h-full rounded-full bg-amber-400 transition-all"
-                            : "h-full rounded-full bg-emerald-400 transition-all"
-                        }
+                        className={getRiskBarClass(result.risk_band)}
                         style={{
                           width: `${Math.min(riskPercentage, 100)}%`,
                         }}
@@ -626,8 +1656,47 @@ export default function Home() {
                   <dl className="mt-8 space-y-4 border-t border-slate-800 pt-6 text-sm">
                     <div className="flex justify-between gap-4">
                       <dt className="text-slate-400">Risk band</dt>
-                      <dd className="font-medium capitalize text-slate-100">
-                        {result.risk_band}
+                      <dd className="font-medium text-slate-100">
+                        {getRiskBandLabel(result.risk_band)}
+                      </dd>
+                    </div>
+
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-slate-400">Follow-up status</dt>
+                      <dd className="font-medium text-slate-100">
+                        {result.flagged_for_follow_up
+                          ? "Flagged for review"
+                          : "Below model threshold"}
+                      </dd>
+                    </div>
+
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-slate-400">
+                        Decision margin
+                      </dt>
+
+                      <dd className="text-right font-medium text-slate-100">
+                        {result.decision_margin >= 0 ? "+" : ""}
+                        {(result.decision_margin * 100).toFixed(1)}
+                        {" percentage points"}
+                      </dd>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4">
+                      <dt className="text-slate-400">
+                        Threshold proximity
+                      </dt>
+
+                      <dd>
+                        <span
+                          className={getThresholdProximityClass(
+                            result.threshold_proximity,
+                          )}
+                        >
+                          {getThresholdProximityLabel(
+                            result.threshold_proximity,
+                          )}
+                        </span>
                       </dd>
                     </div>
 
@@ -645,6 +1714,107 @@ export default function Home() {
                       </dd>
                     </div>
                   </dl>
+
+                  <div className="mt-8 border-t border-slate-800 pt-6">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+                      Suggested demo workflow
+                    </p>
+
+                    <h3 className="mt-2 text-lg font-semibold text-white">
+                      {getWorkflowGuidance(result.risk_band).title}
+                    </h3>
+
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      {getWorkflowGuidance(result.risk_band).summary}
+                    </p>
+
+                    <div className="mt-5 space-y-3">
+                      {getWorkflowGuidance(result.risk_band).steps.map(
+                        (step, index) => (
+                          <div
+                            key={step}
+                            className="flex gap-3 rounded-xl border border-slate-800 bg-slate-950/60 p-4"
+                          >
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-xs font-semibold text-blue-300">
+                              {index + 1}
+                            </div>
+
+                            <p className="pt-1 text-sm text-slate-300">
+                              {step}
+                            </p>
+                          </div>
+                        ),
+                      )}
+                    </div>
+
+                    <p className="mt-4 text-xs leading-5 text-slate-500">
+                      Demonstration workflow only. These steps are not medical
+                      recommendations and are not validated for clinical use.
+                    </p>
+                  </div>
+
+                  {result.explanations.length > 0 && (
+                    <div className="mt-8 border-t border-slate-800 pt-6">
+                      <div>
+                        <h3 className="font-semibold text-white">
+                          Why this prediction?
+                        </h3>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          Model-derived local effects based on how the risk
+                          changes when each input is reset to its default.
+                        </p>
+                      </div>
+
+                      <div className="mt-5 space-y-3">
+                        {result.explanations.map((explanation) => {
+                          const increasesRisk =
+                            explanation.direction === "increases_risk";
+
+                          return (
+                            <div
+                              key={explanation.feature}
+                              className="rounded-xl border border-slate-800 bg-slate-950/60 p-4"
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <p className="text-sm font-medium capitalize text-slate-200">
+                                    {explanation.feature.replaceAll("_", " ")}
+                                  </p>
+
+                                  <p className="mt-1 text-xs text-slate-500">
+                                    Patient value: {explanation.value}
+                                  </p>
+                                </div>
+
+                                <span
+                                  className={
+                                    increasesRisk
+                                      ? "rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-300"
+                                      : "rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-300"
+                                  }
+                                >
+                                  {increasesRisk
+                                    ? "Raises risk"
+                                    : "Lowers risk"}
+                                </span>
+                              </div>
+
+                              <div className="mt-3 flex items-center justify-between text-xs">
+                                <span className="text-slate-500">
+                                  Estimated local impact
+                                </span>
+
+                                <span className="font-semibold text-slate-200">
+                                  {(explanation.impact * 100).toFixed(1)}{" "}
+                                  percentage points
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="mt-8 rounded-2xl border border-dashed border-slate-700 p-8 text-center">
@@ -665,6 +1835,589 @@ export default function Home() {
             </section>
           </aside>
         </div>
+
+        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+                Batch analysis
+              </p>
+
+              <h2 className="mt-2 text-2xl font-semibold text-white">
+                CSV batch prediction
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                Upload up to 1,000 hospital encounters and score them
+                together using the same readmission model.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={downloadBatchTemplate}
+              className="rounded-xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
+            >
+              Download CSV template
+            </button>
+          </div>
+
+          <div className="mt-7 rounded-2xl border border-dashed border-slate-700 bg-slate-950/40 p-6">
+            <label className="block cursor-pointer">
+              <span className="block text-sm font-semibold text-white">
+                Select patient CSV
+              </span>
+
+              <span className="mt-1 block text-xs leading-5 text-slate-500">
+                Maximum 1,000 encounter rows. Use the template if you
+                need the expected column names.
+              </span>
+
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={handleBatchFile}
+                disabled={batchLoading}
+                className="mt-4 block w-full text-sm text-slate-400 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-600 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-500 disabled:opacity-60"
+              />
+            </label>
+
+            {batchFileName && (
+              <p className="mt-3 text-xs text-slate-500">
+                Selected file: {batchFileName}
+              </p>
+            )}
+
+            {batchLoading && (
+              <p className="mt-4 text-sm text-blue-300">
+                Analyzing CSV...
+              </p>
+            )}
+
+            {batchError && (
+              <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+                {batchError}
+              </div>
+            )}
+          </div>
+
+          {batchResult && (
+            <>
+              <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+                {[
+                  ["Total", batchResult.total_rows],
+                  [
+                    "Average risk",
+                    `${(batchResult.average_risk * 100).toFixed(1)}%`,
+                  ],
+                  ["Flagged", batchResult.flagged_rows],
+                  ["Low", batchResult.low_count],
+                  ["Moderate", batchResult.moderate_count],
+                  ["Elevated", batchResult.elevated_count],
+                  ["High", batchResult.high_count],
+                ].map(([label, value]) => (
+                  <div
+                    key={String(label)}
+                    className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4"
+                  >
+                    <p className="text-xl font-bold text-white">
+                      {value}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-7 flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-semibold text-white">
+                    Prediction results
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    One result for every uploaded encounter.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadBatchResults(batchResult)
+                  }
+                  className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
+                >
+                  Download results CSV
+                </button>
+              </div>
+
+              <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-800">
+                <table className="w-full min-w-[650px] text-left text-sm">
+                  <thead className="bg-slate-950/70 text-xs uppercase tracking-wider text-slate-500">
+                    <tr>
+                      <th className="px-4 py-3">
+                        Row
+                      </th>
+                      <th className="px-4 py-3">
+                        Risk score
+                      </th>
+                      <th className="px-4 py-3">
+                        Risk band
+                      </th>
+                      <th className="px-4 py-3">
+                        Follow-up
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {batchResult.predictions.map(
+                      (prediction) => (
+                        <tr
+                          key={prediction.row_number}
+                          className="border-t border-slate-800"
+                        >
+                          <td className="px-4 py-3 text-slate-400">
+                            {prediction.row_number}
+                          </td>
+
+                          <td className="px-4 py-3 font-semibold text-white">
+                            {(prediction.risk_score * 100).toFixed(1)}%
+                          </td>
+
+                          <td className="px-4 py-3">
+                            <span
+                              className={getRiskBandBadgeClass(
+                                prediction.risk_band,
+                              )}
+                            >
+                              {getRiskBandLabel(
+                                prediction.risk_band,
+                              )}
+                            </span>
+                          </td>
+
+                          <td className="px-4 py-3 text-slate-300">
+                            {prediction.flagged_for_follow_up
+                              ? "Flagged for review"
+                              : "Below threshold"}
+                          </td>
+                        </tr>
+                      ),
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
+        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+              Model analytics
+            </p>
+
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              Test cohort dashboard
+            </h2>
+
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+              Analytics generated from the held-out test cohort using the
+              trained HistGradientBoosting model.
+            </p>
+          </div>
+
+          {analyticsLoading && (
+            <div className="mt-7 rounded-2xl border border-slate-800 bg-slate-950/40 p-6 text-sm text-slate-400">
+              Loading model analytics...
+            </div>
+          )}
+
+          {analyticsError && (
+            <div className="mt-7 rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-200">
+              {analyticsError}
+            </div>
+          )}
+
+          {analytics && (
+            <>
+              <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+                  <p className="text-2xl font-bold text-white">
+                    {analytics.test_encounters.toLocaleString()}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Test encounters
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+                  <p className="text-2xl font-bold text-white">
+                    {(analytics.actual_readmission_rate * 100).toFixed(1)}%
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Actual readmission rate
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+                  <p className="text-2xl font-bold text-white">
+                    {(analytics.average_predicted_risk * 100).toFixed(1)}%
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Average predicted risk
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+                  <p className="text-2xl font-bold text-white">
+                    {(analytics.flagged_rate * 100).toFixed(1)}%
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Flagged for review
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 grid gap-6 xl:grid-cols-2">
+                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                  <h3 className="text-lg font-semibold text-white">
+                    Risk distribution
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Model risk bands across the held-out test cohort.
+                  </p>
+
+                  <div className="mt-6 space-y-5">
+                    {[
+                      ["Low", analytics.risk_distribution.low],
+                      [
+                        "Moderate",
+                        analytics.risk_distribution.moderate,
+                      ],
+                      [
+                        "Elevated",
+                        analytics.risk_distribution.elevated,
+                      ],
+                      ["High", analytics.risk_distribution.high],
+                    ].map(([label, value]) => (
+                      <AnalyticsBarRow
+                        key={String(label)}
+                        label={String(label)}
+                        value={Number(value)}
+                        maxValue={analytics.test_encounters}
+                        displayValue={`${Number(
+                          value,
+                        ).toLocaleString()} · ${(
+                          (Number(value) /
+                            analytics.test_encounters) *
+                          100
+                        ).toFixed(1)}%`}
+                      />
+                    ))}
+                  </div>
+                </article>
+
+                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                  <h3 className="text-lg font-semibold text-white">
+                    Risk by age group
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Average model score compared with observed
+                    30-day readmission.
+                  </p>
+
+                  <div className="mt-6 max-h-[520px] space-y-3 overflow-y-auto pr-2">
+                    {analytics.age_groups.map((group) => (
+                      <ComparisonBarRow
+                        key={group.age}
+                        label={group.age}
+                        predicted={group.average_risk}
+                        actual={group.actual_readmission}
+                      />
+                    ))}
+                  </div>
+                </article>
+
+                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                  <h3 className="text-lg font-semibold text-white">
+                    Risk by admission type
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Average predicted risk for each admission category.
+                  </p>
+
+                  <div className="mt-6 space-y-5">
+                    {analytics.admission_types.map((group) => {
+                      const label =
+                        admissionTypes.find(
+                          (option) =>
+                            Number(option.value) ===
+                            group.admission_type_id,
+                        )?.label ??
+                        `Admission type ${group.admission_type_id}`;
+
+                      return (
+                        <AnalyticsBarRow
+                          key={group.admission_type_id}
+                          label={label}
+                          value={group.average_risk}
+                          maxValue={1}
+                          displayValue={`${(
+                            group.average_risk * 100
+                          ).toFixed(1)}% · ${group.encounters.toLocaleString()} encounters`}
+                        />
+                      );
+                    })}
+                  </div>
+                </article>
+
+                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                  <h3 className="text-lg font-semibold text-white">
+                    Risk by length of stay
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Average predicted risk by days spent in hospital.
+                  </p>
+
+                  <div className="mt-6 max-h-[520px] space-y-5 overflow-y-auto pr-2">
+                    {analytics.length_of_stay.map((group) => (
+                      <AnalyticsBarRow
+                        key={group.days}
+                        label={`${group.days} ${
+                          group.days === 1
+                            ? "day"
+                            : "days"
+                        }`}
+                        value={group.average_risk}
+                        maxValue={1}
+                        displayValue={`${(
+                          group.average_risk * 100
+                        ).toFixed(1)}% · ${group.encounters.toLocaleString()} encounters`}
+                      />
+                    ))}
+                  </div>
+                </article>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/40 p-5 text-xs leading-5 text-slate-500">
+                Charts are calculated from the held-out test cohort.
+                Predicted risk should not be interpreted as clinical
+                calibration or medical guidance.
+              </div>
+            </>
+          )}
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+              Model performance
+            </p>
+
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              Held-out evaluation
+            </h2>
+
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+              Performance measured on the 19,867-encounter test cohort
+              using the selected 38.5% decision threshold.
+            </p>
+          </div>
+
+          {performanceLoading && (
+            <div className="mt-7 rounded-2xl border border-slate-800 bg-slate-950/40 p-6 text-sm text-slate-400">
+              Loading model performance...
+            </div>
+          )}
+
+          {performanceError && (
+            <div className="mt-7 rounded-2xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-200">
+              {performanceError}
+            </div>
+          )}
+
+          {performance && (
+            <>
+              <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                  [
+                    "ROC-AUC",
+                    performance.metrics.roc_auc.toFixed(3),
+                  ],
+                  [
+                    "Average precision",
+                    performance.metrics.average_precision.toFixed(3),
+                  ],
+                  [
+                    "Recall",
+                    `${(performance.metrics.recall * 100).toFixed(1)}%`,
+                  ],
+                  [
+                    "Precision",
+                    `${(performance.metrics.precision * 100).toFixed(1)}%`,
+                  ],
+                  [
+                    "F1 score",
+                    performance.metrics.f1.toFixed(3),
+                  ],
+                  [
+                    "Specificity",
+                    `${(performance.metrics.specificity * 100).toFixed(1)}%`,
+                  ],
+                  [
+                    "Accuracy",
+                    `${(performance.metrics.accuracy * 100).toFixed(1)}%`,
+                  ],
+                  [
+                    "Decision threshold",
+                    `${(performance.decision_threshold * 100).toFixed(1)}%`,
+                  ],
+                ].map(([label, value]) => (
+                  <div
+                    key={String(label)}
+                    className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5"
+                  >
+                    <p className="text-2xl font-bold text-white">
+                      {value}
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-400">
+                      {label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 grid gap-6 xl:grid-cols-2">
+                <PerformanceCurveChart
+                  title="ROC curve"
+                  subtitle="Sensitivity across false-positive rates on the held-out test cohort."
+                  points={performance.roc_curve}
+                  metricLabel="ROC-AUC"
+                  metricValue={performance.metrics.roc_auc.toFixed(
+                    3,
+                  )}
+                  diagonal
+                />
+
+                <PerformanceCurveChart
+                  title="Precision–Recall curve"
+                  subtitle="Precision versus recall across possible classification thresholds."
+                  points={
+                    performance.precision_recall_curve
+                  }
+                  metricLabel="Average precision"
+                  metricValue={
+                    performance.metrics.average_precision.toFixed(
+                      3,
+                    )
+                  }
+                  baselineY={performance.positive_rate}
+                />
+              </div>
+
+              <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">
+                      Confusion matrix
+                    </h3>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Classification outcomes at the selected threshold.
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-slate-500">
+                    {performance.test_encounters.toLocaleString()} test encounters
+                  </p>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-300">
+                      True positive
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold text-white">
+                      {performance.confusion_matrix.true_positive.toLocaleString()}
+                    </p>
+
+                    <p className="mt-2 text-xs leading-5 text-slate-400">
+                      Readmissions correctly flagged by the model.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-red-300">
+                      False positive
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold text-white">
+                      {performance.confusion_matrix.false_positive.toLocaleString()}
+                    </p>
+
+                    <p className="mt-2 text-xs leading-5 text-slate-400">
+                      Non-readmissions that were still flagged.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+                      False negative
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold text-white">
+                      {performance.confusion_matrix.false_negative.toLocaleString()}
+                    </p>
+
+                    <p className="mt-2 text-xs leading-5 text-slate-400">
+                      Readmissions missed at the selected threshold.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-blue-300">
+                      True negative
+                    </p>
+
+                    <p className="mt-2 text-3xl font-bold text-white">
+                      {performance.confusion_matrix.true_negative.toLocaleString()}
+                    </p>
+
+                    <p className="mt-2 text-xs leading-5 text-slate-400">
+                      Non-readmissions correctly left below threshold.
+                    </p>
+                  </div>
+                </div>
+
+                <p className="mt-5 text-xs leading-5 text-slate-500">
+                  This threshold prioritizes recall, which increases the
+                  number of false-positive review flags. Results are for
+                  research and portfolio demonstration only.
+                </p>
+              </div>
+            </>
+          )}
+        </section>
+
+        <ThresholdSimulator />
+
+        <AuditActivity />
+
+        <ModelMonitoring />
+
+        <ModelRegistry />
+
+        <SubgroupAnalysis />
+
+        <CalibrationAnalysis />
+
       </div>
     </main>
   );
