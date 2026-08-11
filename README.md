@@ -42,7 +42,7 @@ The threshold was selected to prioritize recall, which means the model identifie
 
 ## Dataset
 
-This project uses the **Diabetes 130-US Hospitals for Years 1999-2008** dataset from the UCI Machine Learning Repository.
+This project uses the [**Diabetes 130-US Hospitals for Years 1999-2008**](https://archive.ics.uci.edu/dataset/296/diabetes%2B130-us%2Bhospitals%2Bfor%2Byears%2B1999-2008) dataset from the UCI Machine Learning Repository.
 
 The original dataset contains:
 
