@@ -748,8 +748,8 @@ function PerformanceCurveChart({
   const ticks = [0, 0.25, 0.5, 0.75, 1];
 
   return (
-    <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
-      <div className="flex items-start justify-between gap-5">
+    <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-white">
             {title}
@@ -760,7 +760,7 @@ function PerformanceCurveChart({
           </p>
         </div>
 
-        <div className="shrink-0 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-right">
+        <div className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-left sm:w-auto sm:shrink-0 sm:text-right">
           <p className="text-xs text-slate-500">
             {metricLabel}
           </p>
@@ -771,10 +771,10 @@ function PerformanceCurveChart({
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto">
+      <div className="mt-6 overflow-hidden">
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="min-w-[520px] w-full"
+          className="h-auto w-full"
           role="img"
           aria-label={title}
         >
@@ -1216,14 +1216,14 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-7xl px-5 py-10 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-5 sm:py-10 lg:px-8">
         <header className="mb-10 flex flex-col gap-6 border-b border-slate-800 pb-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="mb-4 inline-flex rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-300">
               Machine Learning Portfolio
             </div>
 
-            <h1 className="max-w-3xl text-4xl font-bold tracking-tight md:text-5xl">
+            <h1 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
               Hospital Readmission Risk
             </h1>
 
@@ -1264,7 +1264,7 @@ export default function Home() {
         <div className="grid gap-8 xl:grid-cols-[1.55fr_0.85fr]">
           <form
             onSubmit={handleSubmit}
-            className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 shadow-2xl shadow-black/20 md:p-8"
+            className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4 shadow-2xl shadow-black/20 sm:p-6 md:p-8"
           >
             <div className="mb-7">
               <h2 className="text-2xl font-semibold">Patient information</h2>
@@ -2028,7 +2028,7 @@ export default function Home() {
           </div>
 
           {analyticsLoading && (
-            <div className="mt-7 rounded-2xl border border-slate-800 bg-slate-950/40 p-6 text-sm text-slate-400">
+            <div className="mt-7 rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-6 text-sm text-slate-400">
               Loading model analytics...
             </div>
           )}
@@ -2080,7 +2080,7 @@ export default function Home() {
               </div>
 
               <div className="mt-8 grid gap-6 xl:grid-cols-2">
-                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-6">
                   <h3 className="text-lg font-semibold text-white">
                     Risk distribution
                   </h3>
@@ -2119,7 +2119,7 @@ export default function Home() {
                   </div>
                 </article>
 
-                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-6">
                   <h3 className="text-lg font-semibold text-white">
                     Risk by age group
                   </h3>
@@ -2141,7 +2141,7 @@ export default function Home() {
                   </div>
                 </article>
 
-                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-6">
                   <h3 className="text-lg font-semibold text-white">
                     Risk by admission type
                   </h3>
@@ -2175,7 +2175,7 @@ export default function Home() {
                   </div>
                 </article>
 
-                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+                <article className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-6">
                   <h3 className="text-lg font-semibold text-white">
                     Risk by length of stay
                   </h3>
@@ -2230,7 +2230,7 @@ export default function Home() {
           </div>
 
           {performanceLoading && (
-            <div className="mt-7 rounded-2xl border border-slate-800 bg-slate-950/40 p-6 text-sm text-slate-400">
+            <div className="mt-7 rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-6 text-sm text-slate-400">
               Loading model performance...
             </div>
           )}
@@ -2321,7 +2321,7 @@ export default function Home() {
                 />
               </div>
 
-              <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+              <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-white">

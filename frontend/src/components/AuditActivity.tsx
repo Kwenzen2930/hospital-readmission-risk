@@ -120,7 +120,7 @@ export default function AuditActivity() {
   }, [loadAudit]);
 
   return (
-    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 md:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
@@ -141,7 +141,7 @@ export default function AuditActivity() {
         <button
           type="button"
           onClick={() => void loadAudit()}
-          className="w-fit rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-600 hover:text-white"
+          className="w-full rounded-xl sm:w-fit border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-600 hover:text-white"
         >
           Refresh activity
         </button>
@@ -209,7 +209,7 @@ export default function AuditActivity() {
                 Risk bands
               </p>
 
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                 {[
                   "low",
                   "moderate",
@@ -237,7 +237,7 @@ export default function AuditActivity() {
                 Threshold proximity
               </p>
 
-              <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+              <div className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
                 {[
                   "near",
                   "moderate",

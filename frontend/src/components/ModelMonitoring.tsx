@@ -145,7 +145,7 @@ export default function ModelMonitoring() {
   }, [loadMonitoring]);
 
   return (
-    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 md:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
@@ -169,7 +169,7 @@ export default function ModelMonitoring() {
           onClick={() =>
             void loadMonitoring()
           }
-          className="w-fit rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-600 hover:text-white"
+          className="w-full rounded-xl sm:w-fit border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-600 hover:text-white"
         >
           Refresh monitoring
         </button>
@@ -377,7 +377,7 @@ export default function ModelMonitoring() {
                 the decision boundary.
               </p>
 
-              <div className="mt-5 grid grid-cols-3 gap-3">
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {[
                   "near",
                   "moderate",
@@ -428,7 +428,7 @@ export default function ModelMonitoring() {
 
                 return (
                   <div key={band}>
-                    <div className="mb-2 flex items-center justify-between text-sm">
+                    <div className="mb-2 flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
                       <span className="capitalize text-slate-300">
                         {band}
                       </span>

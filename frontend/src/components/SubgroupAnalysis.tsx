@@ -136,7 +136,7 @@ export default function SubgroupAnalysis() {
     data?.subgroups[activeAttribute] ?? [];
 
   return (
-    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 md:p-8">
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
           Held-out subgroup analysis
@@ -390,7 +390,7 @@ export default function SubgroupAnalysis() {
                 Version
               </p>
 
-              <p className="mt-1 font-mono text-sm text-white">
+              <p className="mt-1 break-all font-mono text-sm text-white">
                 {data.model_version}
               </p>
 

@@ -94,7 +94,7 @@ export default function ModelRegistry() {
     ) ?? null;
 
   return (
-    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 md:p-8">
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
           Model registry
@@ -131,7 +131,7 @@ export default function ModelRegistry() {
                 Active
               </p>
 
-              <p className="mt-2 font-mono text-lg font-semibold text-white">
+              <p className="mt-2 break-all font-mono text-base font-semibold text-white sm:text-lg">
                 {activeModel.version}
               </p>
             </div>
@@ -246,7 +246,7 @@ export default function ModelRegistry() {
                 Held-out evaluation
               </h3>
 
-              <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {[
                   [
                     "ROC-AUC",

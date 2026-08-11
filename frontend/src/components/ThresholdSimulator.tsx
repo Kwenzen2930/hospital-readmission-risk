@@ -150,7 +150,7 @@ export default function ThresholdSimulator() {
   }
 
   return (
-    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 md:p-8">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
@@ -173,7 +173,7 @@ export default function ThresholdSimulator() {
           <button
             type="button"
             onClick={resetThreshold}
-            className="w-fit rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-600 hover:text-white"
+            className="w-full rounded-xl sm:w-fit border border-slate-700 bg-slate-950 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-600 hover:text-white"
           >
             Reset to selected threshold
           </button>
@@ -195,7 +195,7 @@ export default function ThresholdSimulator() {
       {simulation && point && (
         <>
           <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
-            <div className="flex items-end justify-between gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-sm text-slate-400">
                   Current threshold
@@ -206,7 +206,7 @@ export default function ThresholdSimulator() {
                 </p>
               </div>
 
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <p className="text-xs text-slate-500">
                   Model-selected threshold
                 </p>
@@ -234,7 +234,7 @@ export default function ThresholdSimulator() {
               aria-label="Decision threshold"
             />
 
-            <div className="mt-3 flex justify-between text-xs text-slate-500">
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500 sm:grid-cols-3">
               <span>
                 {percent(
                   simulation.points[0].threshold,
