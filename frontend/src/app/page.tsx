@@ -926,7 +926,50 @@ function PerformanceCurveChart({
   );
 }
 
+
+type DashboardSection =
+  | "overview"
+  | "predict"
+  | "analytics"
+  | "model"
+  | "monitoring";
+
+const dashboardSections: {
+  id: DashboardSection;
+  label: string;
+  description: string;
+}[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    description: "Project and model summary",
+  },
+  {
+    id: "predict",
+    label: "Predict",
+    description: "Patient and batch scoring",
+  },
+  {
+    id: "analytics",
+    label: "Analytics",
+    description: "Performance and thresholds",
+  },
+  {
+    id: "model",
+    label: "Model",
+    description: "Registry, groups and calibration",
+  },
+  {
+    id: "monitoring",
+    label: "Monitoring",
+    description: "Prediction activity and drift",
+  },
+];
+
 export default function Home() {
+  const [activeSection, setActiveSection] =
+    useState<DashboardSection>("overview");
+
   const [form, setForm] = useState<FormState>(initialForm);
   const [result, setResult] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -1206,6 +1249,15 @@ export default function Home() {
     }
   }
 
+  function changeSection(section: DashboardSection) {
+    setActiveSection(section);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
   const riskPercentage = result
     ? Math.round(result.risk_score * 1000) / 10
     : 0;
@@ -1216,7 +1268,133 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-5 sm:py-10 lg:px-8">
+      <div className="mx-auto w-full max-w-[1500px] px-4 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
+        <div className="lg:grid lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-8">
+          <aside className="hidden lg:block">
+            <div className="sticky top-8 rounded-3xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl shadow-black/10">
+              <div className="border-b border-slate-800 px-2 pb-5 pt-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+                  ML Portfolio
+                </p>
+
+                <p className="mt-2 text-lg font-bold leading-6 text-white">
+                  Hospital Readmission Risk
+                </p>
+
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  End-to-end prediction dashboard
+                </p>
+              </div>
+
+              <nav
+                className="mt-4 space-y-1"
+                aria-label="Dashboard navigation"
+              >
+                {dashboardSections.map((item) => {
+                  const active =
+                    activeSection === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() =>
+                        changeSection(item.id)
+                      }
+                      aria-current={
+                        active ? "page" : undefined
+                      }
+                      className={
+                        active
+                          ? "w-full rounded-xl border border-blue-500/30 bg-blue-500/15 px-3 py-3 text-left"
+                          : "w-full rounded-xl border border-transparent px-3 py-3 text-left transition hover:border-slate-800 hover:bg-slate-950/60"
+                      }
+                    >
+                      <p
+                        className={
+                          active
+                            ? "text-sm font-semibold text-blue-200"
+                            : "text-sm font-medium text-slate-300"
+                        }
+                      >
+                        {item.label}
+                      </p>
+
+                      <p className="mt-1 text-xs leading-4 text-slate-500">
+                        {item.description}
+                      </p>
+                    </button>
+                  );
+                })}
+              </nav>
+
+              <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
+                <p className="text-xs uppercase tracking-wider text-emerald-300">
+                  Model online
+                </p>
+
+                <p className="mt-1 text-xs font-medium text-emerald-100">
+                  HistGradientBoosting
+                </p>
+              </div>
+            </div>
+          </aside>
+
+          <div className="min-w-0">
+            <div className="sticky top-0 z-40 -mx-4 mb-5 border-b border-slate-800 bg-slate-950/95 px-4 pb-3 pt-3 backdrop-blur lg:hidden">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold uppercase tracking-wider text-blue-300">
+                    Hospital Readmission Risk
+                  </p>
+
+                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                    {
+                      dashboardSections.find(
+                        (item) =>
+                          item.id === activeSection,
+                      )?.description
+                    }
+                  </p>
+                </div>
+
+                <span className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300">
+                  Online
+                </span>
+              </div>
+
+              <div className="mt-3">
+                <label
+                  htmlFor="mobile-dashboard-section"
+                  className="sr-only"
+                >
+                  Dashboard section
+                </label>
+
+                <select
+                  id="mobile-dashboard-section"
+                  value={activeSection}
+                  onChange={(event) =>
+                    changeSection(
+                      event.target.value as DashboardSection,
+                    )
+                  }
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-base font-medium text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {dashboardSections.map((item) => (
+                    <option
+                      key={item.id}
+                      value={item.id}
+                    >
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {activeSection === "overview" && (
+              <>
         <header className="mb-10 flex flex-col gap-6 border-b border-slate-800 pb-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="mb-4 inline-flex rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-blue-300">
@@ -1244,7 +1422,7 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-4 lg:grid-cols-4">
           {[
             ["74.0%", "Test recall"],
             ["0.658", "ROC-AUC"],
@@ -1261,10 +1439,127 @@ export default function Home() {
           ))}
         </section>
 
-        <div className="grid gap-8 xl:grid-cols-[1.55fr_0.85fr]">
+
+        <div className="mt-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+          <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+              About this system
+            </p>
+
+            <h2 className="mt-3 text-2xl font-semibold text-white">
+              End-to-end readmission risk workflow
+            </h2>
+
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+              This project estimates 30-day hospital readmission risk for
+              diabetes-related encounters and demonstrates the full machine
+              learning workflow around the prediction model.
+            </p>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              {[
+                "Individual patient scoring",
+                "CSV batch predictions",
+                "Model performance analysis",
+                "Threshold simulation",
+                "Calibration and subgroup analysis",
+                "Prediction monitoring",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-300"
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+              Model snapshot
+            </p>
+
+            <div className="mt-5 space-y-4">
+              {[
+                ["Model", "HistGradientBoosting"],
+                ["Processed features", "45"],
+                ["Decision threshold", "38.5%"],
+                ["Test encounters", "19,867"],
+                ["Test recall", "74.0%"],
+                ["ROC-AUC", "0.658"],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between gap-4 border-b border-slate-800 pb-3 last:border-0 last:pb-0"
+                >
+                  <span className="text-sm text-slate-500">
+                    {label}
+                  </span>
+
+                  <span className="text-right text-sm font-semibold text-slate-200">
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+              <p className="text-xs leading-5 text-amber-200">
+                Research and portfolio demonstration only. The model is not
+                clinically validated or intended for medical decision-making.
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <section className="mt-6 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+              Quick actions
+            </p>
+
+            <h2 className="mt-2 text-xl font-semibold text-white">
+              Explore the dashboard
+            </h2>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            {[
+              ["predict", "Run prediction", "Score a patient or CSV batch"],
+              ["analytics", "View analytics", "Inspect performance and thresholds"],
+              ["model", "Inspect model", "Registry, groups and calibration"],
+              ["monitoring", "Open monitoring", "Prediction activity and drift"],
+            ].map(([section, title, description]) => (
+              <button
+                key={section}
+                type="button"
+                onClick={() =>
+                  changeSection(section as DashboardSection)
+                }
+                className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4 text-left transition hover:border-blue-500/40 hover:bg-blue-500/5"
+              >
+                <p className="text-sm font-semibold text-white">
+                  {title}
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  {description}
+                </p>
+              </button>
+            ))}
+          </div>
+        </section>
+
+              </>
+            )}
+
+            {activeSection === "predict" && (
+              <>
+        <div className="grid gap-5 sm:gap-8 xl:grid-cols-[1.55fr_0.85fr]">
           <form
             onSubmit={handleSubmit}
-            className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4 shadow-2xl shadow-black/20 sm:p-6 md:p-8"
+            className="rounded-3xl border border-slate-800 bg-slate-900/60 p-4 shadow-2xl shadow-black/20 sm:p-4 sm:p-6 md:p-8"
           >
             <div className="mb-7">
               <h2 className="text-2xl font-semibold">Patient information</h2>
@@ -1610,16 +1905,16 @@ export default function Home() {
           </form>
 
           <aside className="space-y-6">
-            <section className="sticky top-6 rounded-3xl border border-slate-800 bg-slate-900 p-6 md:p-8">
+            <section className="rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-4 sm:p-6 md:p-8 xl:sticky xl:top-6">
               <p className="text-sm font-medium uppercase tracking-widest text-slate-400">
                 Prediction result
               </p>
 
               {result ? (
                 <>
-                  <div className="mt-6 flex items-end justify-between">
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <p className="text-5xl font-bold text-white">
+                      <p className="text-4xl font-bold text-white sm:text-5xl">
                         {riskPercentage}%
                       </p>
                       <p className="mt-2 text-sm text-slate-400">
@@ -1836,7 +2131,7 @@ export default function Home() {
           </aside>
         </div>
 
-        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 md:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
@@ -1930,7 +2225,7 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="mt-7 flex items-center justify-between gap-4">
+              <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="font-semibold text-white">
                     Prediction results
@@ -2011,7 +2306,12 @@ export default function Home() {
             </>
           )}
         </section>
-        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+                      </>
+            )}
+
+            {activeSection === "analytics" && (
+              <>
+        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 md:p-8">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
               Model analytics
@@ -2213,7 +2513,7 @@ export default function Home() {
           )}
         </section>
 
-        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 md:p-8">
+        <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6 md:p-8">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
               Model performance
@@ -2407,17 +2707,26 @@ export default function Home() {
         </section>
 
         <ThresholdSimulator />
+              </>
+            )}
 
-        <AuditActivity />
+            {activeSection === "model" && (
+              <>
+                <ModelRegistry />
+                <SubgroupAnalysis />
+                <CalibrationAnalysis />
+              </>
+            )}
 
-        <ModelMonitoring />
+            {activeSection === "monitoring" && (
+              <>
+                <AuditActivity />
+                <ModelMonitoring />
+              </>
+            )}
 
-        <ModelRegistry />
-
-        <SubgroupAnalysis />
-
-        <CalibrationAnalysis />
-
+          </div>
+        </div>
       </div>
     </main>
   );
